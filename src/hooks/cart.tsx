@@ -30,23 +30,66 @@ const CartProvider: React.FC = ({ children }) => {
 
   useEffect(() => {
     async function loadProducts(): Promise<void> {
-      // TODO LOAD ITEMS FROM ASYNC STORAGE
+      const session = await AsyncStorage.getItem('@GoMarketplace:session');
+      if (session) {
+        setProducts([...JSON.parse(session)]);
+      }
     }
 
     loadProducts();
   }, []);
 
-  const addToCart = useCallback(async product => {
-    // TODO ADD A NEW ITEM TO THE CART
-  }, []);
+  const addToCart = useCallback(
+    async product => {
+      if (products.some(item => item.id === product.id)) {
+        const newArray = products.filter(item => {
+          if (item.id === product.id) item.quantity += 1;
+          return products;
+        });
+        setProducts(newArray);
+        await AsyncStorage.setItem(
+          '@GoMarketplace:session',
+          JSON.stringify(products),
+        );
+      } else {
+        product.quantity = 1;
+        setProducts([...products, product]);
+        await AsyncStorage.setItem(
+          '@GoMarketplace:session',
+          JSON.stringify(products),
+        );
+      }
+    },
+    [products],
+  );
 
   const increment = useCallback(async id => {
-    // TODO INCREMENTS A PRODUCT QUANTITY IN THE CART
-  }, []);
+      const newArray = products.filter(item => {
+        if (item.id === id) item.quantity += 1;
+        return products;
+      });
+      setProducts(newArray);
+      await AsyncStorage.setItem(
+        '@GoMarketplace:session',
+        JSON.stringify(products),
+      );
+    },
+    [products],
+  );
 
   const decrement = useCallback(async id => {
-    // TODO DECREMENTS A PRODUCT QUANTITY IN THE CART
-  }, []);
+      const newArray = products.filter(item => {
+        if (item.id === id) item.quantity -= 1;
+        return products;
+      });
+      setProducts(newArray);
+      await AsyncStorage.setItem(
+        '@GoMarketplace:session',
+        JSON.stringify(products),
+      );
+    },
+    [products],
+  );
 
   const value = React.useMemo(
     () => ({ addToCart, increment, decrement, products }),
